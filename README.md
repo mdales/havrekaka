@@ -1,0 +1,1 @@
+Simple experiments in x86 boot straping and learning Swedish.
