@@ -9,12 +9,12 @@ clear_vga_screen:
     mov bx, VGA_TEXT_SEG
     mov es, bx
     mov edx, 0x0
-    mov ebx, 0x0
+    mov ebx, 0x1E002F00
 .loop:
     mov [es:edx], ebx
     add edx, 4
     cmp edx, 80 * 25 * 2
-    jl .loop
+    jne .loop
 
     ; set the cursor back to zero
     mov word [cursor], 0x0

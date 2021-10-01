@@ -16,6 +16,12 @@ start:
     mov bx, KERNEL_START_MSG
     call print_msg_16
 
+    ; disable the text mode cursor before we jump to protected mode
+    ; as we'll be proding VGA directly after that
+    mov ah, 0x1
+    mov ch, 0x3F
+    int 0x10
+
     ; disable interrupts until we've in protected mode and have set up the
     ; Interrupt Descriptor Table (IDT).
     cli
@@ -65,6 +71,10 @@ protected_start:
     call clear_vga_screen
     call print_vga_string
 
+    ; set up interrupt table and enable interrupts again
+    call build_idt
+    sti
+
     jmp $
 
 
@@ -76,3 +86,4 @@ PROTECTED_START_MSG:
 
 %include "src/kärna/gdt.asm"
 %include "src/kärna/vga_text.asm"
+%include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area
