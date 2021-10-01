@@ -12,7 +12,7 @@ bin/stövelrem.bin: $(BASIC) src/stövelrem.asm
 	mkdir -p bin
 	nasm -f bin -o bin/stövelrem.bin src/stövelrem.asm
 
-bin/kärna.bin: $(BASIC) src/kärna/kärna.asm src/kärna/gdt.asm src/kärna/vga_text.asm
+bin/kärna.bin: $(BASIC) src/kärna/*.asm
 	mkdir -p bin
 	nasm -f bin -o bin/kärna.bin src/kärna/kärna.asm
 

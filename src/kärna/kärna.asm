@@ -26,6 +26,10 @@ start:
     ; Interrupt Descriptor Table (IDT).
     cli
 
+    ; disable the pic
+    ; call disable_pic
+    call remap_pic
+
     ; load the global segment descriptor table
     lgdt [GDT_DESCRIPTOR]
 
@@ -75,15 +79,21 @@ protected_start:
     call build_idt
     sti
 
-    jmp $
+    mov ebx, PROTECTED_START_MSG
+    call print_vga_string
+
+.main:
+    hlt
+    jmp .main
 
 
 KERNEL_START_MSG:
     db "V", 0x84, "lkommen!", 0
 
 PROTECTED_START_MSG:
-    db "Hej!", 0
+    db "Hej! ", 0
 
 %include "src/kärna/gdt.asm"
 %include "src/kärna/vga_text.asm"
+%include "src/kärna/pic.asm"
 %include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area
