@@ -176,7 +176,9 @@ IRQ_HANDLER 47, 15
 non_generic_isr:
     push ebx
 
-    mov word [cursor], 80 * 10 * 2
+    mov bl, 0
+    mov bh, 10
+    call set_vga_cursor_position
 
     mov ebx, INTERRUPT_MSG
     call print_vga_string
@@ -214,7 +216,9 @@ irq_routine:
     push edx
 
     mov dx, [cursor]
-    mov word [cursor], 80 * 11 * 2
+    mov bl, 0
+    mov bh, 11
+    call set_vga_cursor_position
 
     ; if it's not the timer interrupt, print it out.
     mov byte al, [esp + 12]

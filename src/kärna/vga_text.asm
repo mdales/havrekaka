@@ -106,5 +106,38 @@ print_vga_hex_byte:
     pop es
     ret
 
+; Inputs:
+;     bl: cursor x position
+;     bh: cursor y position
+; Returns:
+;     none
+; Clobbers:
+;     none
+set_vga_cursor_position:
+    cmp bl, 80
+    jge .done
+    cmp bh, 25
+    jge .done
+
+    push eax
+    push ebx
+
+    ; a pointless attempt to avoid using mul for fun but not profit
+    xor eax, eax
+    mov al, bh
+    shl eax, 6 ; y * 64
+    add al, bl
+    adc ah, 0x0
+    shr ebx, 4 ; y * 16
+    and bx, 0x0FF0
+    add ax, bx
+    shl ax, 1
+    mov word [cursor], ax
+
+    pop ebx
+    pop eax
+.done:
+    ret
+
 ; memory location to store current offset in VGA
 cursor: dw 0x0
