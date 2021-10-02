@@ -211,34 +211,18 @@ non_generic_isr:
 irq_routine:
     push ebx
 
-    mov word [cursor], 80 * 10 * 2
+    mov word [cursor], 80 * 11 * 2
 
     mov ebx, IRQ_MSG
     call print_vga_string
 
+    ; if it's not the timer interrupt, print it out.
     mov byte bl, [esp + 4]
-    call print_vga_hex_byte
-    mov byte bl, [esp + 5]
-    call print_vga_hex_byte
-    mov byte bl, [esp + 6]
-    call print_vga_hex_byte
-    mov byte bl, [esp + 7]
+    cmp bl, 0
+    je .timer_skip
     call print_vga_hex_byte
 
-    mov bx, [cursor]
-    add bx, 2
-    mov word [cursor], bx
-
-    mov byte bl, [esp + 8]
-    call print_vga_hex_byte
-    mov byte bl, [esp + 9]
-    call print_vga_hex_byte
-    mov byte bl, [esp + 10]
-    call print_vga_hex_byte
-    mov byte bl, [esp + 11]
-    call print_vga_hex_byte
-
-
+.timer_skip
     ; clear IRQ!
     mov byte bl, [esp + 4]
     call clear_pic
