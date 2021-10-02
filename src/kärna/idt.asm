@@ -219,7 +219,7 @@ irq_routine:
     ; if it's not the timer interrupt, print it out.
     mov byte al, [esp + 12]
     cmp al, 0
-    je .timer_skip
+    je .skip
 
     mov ebx, IRQ_MSG
     call print_vga_string
@@ -227,7 +227,20 @@ irq_routine:
     mov bl, al
     call print_vga_hex_byte
 
-.timer_skip:
+    cmp al, 1
+    jne .skip
+    ;  this is the keyboard interrupt, so read the keycode
+    in al, 0x60
+
+    mov word bx, [cursor]
+    add bx, 2
+    mov word [cursor], bx
+
+    mov bl, al
+    call print_vga_hex_byte
+    
+
+.skip:
     ; clear IRQ!
     call clear_pic
 
