@@ -74,12 +74,11 @@ print_vga_string:
 print_vga_hex_byte:
     push es
     push edx
+    push ebx
 
     mov edx, VGA_TEXT_SEG
     mov es, edx
     mov dx, [cursor]
-
-    push ebx
 
     shr bl, 4
     add bl, '0'

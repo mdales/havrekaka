@@ -209,25 +209,33 @@ non_generic_isr:
     iret
 
 irq_routine:
+    push eax
     push ebx
+    push edx
 
+    mov dx, [cursor]
     mov word [cursor], 80 * 11 * 2
+
+    ; if it's not the timer interrupt, print it out.
+    mov byte al, [esp + 12]
+    cmp al, 0
+    je .timer_skip
 
     mov ebx, IRQ_MSG
     call print_vga_string
 
-    ; if it's not the timer interrupt, print it out.
-    mov byte bl, [esp + 4]
-    cmp bl, 0
-    je .timer_skip
+    mov bl, al
     call print_vga_hex_byte
 
-.timer_skip
+.timer_skip:
     ; clear IRQ!
-    mov byte bl, [esp + 4]
     call clear_pic
 
+    mov word [cursor], dx
+
+    pop edx
     pop ebx
+    pop eax
     add esp, 8
     sti
     iret
