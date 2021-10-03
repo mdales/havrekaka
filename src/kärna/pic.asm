@@ -70,12 +70,6 @@ remap_pic:
     push eax
     push ebx
 
-    ; backup state of PIC
-    ; in al, PIC1_DATA
-    ; mov bh, al
-    ; in al, PIC2_DATA
-    ; mov bl, al
-
     out_al PIC1_COMMAND, ICW1_INIT | ICW1_ICW4
     out_al PIC2_COMMAND, ICW1_INIT | ICW1_ICW4
     out_al PIC1_DATA, 0x20 ; remap to interrupt 32->39
@@ -84,15 +78,8 @@ remap_pic:
     out_al PIC2_DATA, 2
     out_al PIC1_DATA, ICW4_8086
     out_al PIC2_DATA, ICW4_8086
-
-    ; restore state of PIC
-    ; mov al, bh
-    ; out_al PIC1_DATA, al
-    ; mov al, bl
-    ; out_al PIC2_DATA, al
     out_al PIC1_DATA, 0x0
     out_al PIC2_DATA, 0x0
-
 
     pop ebx
     pop eax
