@@ -66,6 +66,31 @@ print_vga_string:
 
 
 ; Inputs:
+;     bl: ASCII character
+; Returns:
+;     none
+; Clobbers:
+;     none
+print_vga_character:
+    push es
+    push ebx
+    push edx
+
+    mov edx, VGA_TEXT_SEG
+    mov es, edx
+    mov dx, [cursor]
+
+    mov byte [es:edx], bl
+    add edx, 2
+    mov [cursor], dx
+
+    pop edx
+    pop ebx
+    pop es
+    ret
+
+
+; Inputs:
 ;     bl: byte to print
 ; Returns:
 ;     none

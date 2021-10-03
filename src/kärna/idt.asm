@@ -216,14 +216,16 @@ irq_routine:
     push edx
 
     mov dx, [cursor]
-    mov bl, 0
-    mov bh, 11
-    call set_vga_cursor_position
 
     ; if it's not the timer interrupt, print it out.
     mov byte al, [esp + 12]
     cmp al, 0
-    je .skip
+    je .tick
+
+    ; default path
+    mov bl, 0
+    mov bh, 11
+    call set_vga_cursor_position
 
     mov ebx, IRQ_MSG
     call print_vga_string
@@ -232,7 +234,7 @@ irq_routine:
     call print_vga_hex_byte
 
     cmp al, 1
-    jne .skip
+    jne .done
     ;  this is the keyboard interrupt, so read the keycode
     in al, 0x60
 
@@ -242,9 +244,30 @@ irq_routine:
 
     mov bl, al
     call print_vga_hex_byte
-    
+    jmp .done
 
-.skip:
+.tick:
+    mov bl, 79
+    mov bh, 0
+    call set_vga_cursor_position
+
+    xor eax, eax
+    mov al, [spinner_offset]
+    lea ebx, [spinner_pattern]
+    add ebx, eax
+    mov bl, [ebx]
+    inc al
+    cmp al, 4
+    jne .store
+    mov al, 0
+.store:
+    mov [spinner_offset], al
+
+    call print_vga_character
+
+
+
+.done:
     ; clear IRQ!
     call clear_pic
 
@@ -268,6 +291,10 @@ generic_isr:
     sti
     iret
 
+spinner_pattern:
+    db '/', '-', '\', '|'
+spinner_offset:
+    db 0
 
 INTERRUPT_MSG:
     db " Interrupt called ", 0
