@@ -95,5 +95,6 @@ PROTECTED_START_MSG:
 
 %include "src/kärna/gdt.asm"
 %include "src/kärna/vga_text.asm"
+%include "src/kärna/vesa.asm"
 %include "src/kärna/pic.asm"
 %include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area
