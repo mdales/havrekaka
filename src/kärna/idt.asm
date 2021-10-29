@@ -1,4 +1,6 @@
 
+[bits 32]
+
 ISR_COUNT equ 256
 ISR_ENTRY_SIZE equ 8
 

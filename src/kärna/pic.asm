@@ -1,3 +1,4 @@
+[bits 32]
 
 PIC1            equ 0x20
 PIC2            equ 0xA0

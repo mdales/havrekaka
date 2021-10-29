@@ -3,14 +3,15 @@
 
 ; at some point we'll be more clever in our build, but for now hard coded
 KERNEL_SECTOR_OFFSET equ 2
-KERNEL_SECTOR_COUNT equ 6
+KERNEL_SECTOR_COUNT equ 7
 
 start:
 	; Set up real-mode memory map
     mov ax, 0x0
     mov ds, ax
+    mov ss, ax
 
-    mov bp, 0x9000
+    mov bp, 0x7c00
     mov sp, bp
 
     ; Show some sign of life

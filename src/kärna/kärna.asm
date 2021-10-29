@@ -8,8 +8,10 @@ start:
     ; we'll be using a totally different map
     mov ax, 0x0
     mov ds, ax
+    mov ss, ax
+    mov es, ax
 
-    mov bp, 0x9000
+    mov bp, 0x7c00
     mov sp, bp
 
     ; let the world know we made it across
@@ -22,6 +24,36 @@ start:
     mov ch, 0x3F
     int 0x10
 
+    ; We need to set up VESA now, so we can use int 0x10, but we'll only be
+    ; able to draw to it once we've set up the GDT as we're using the LFB from
+    ; VESA 2.0 for now
+    mov di, 0x0500 ; store vesa info at start of free mem for now
+    call vesa_load_info
+    cmp ax, 0x0
+    jne .vesa_setup
+    mov bx, VESA_LOAD_FAIL_MSG
+    call print_msg_16
+    jmp $
+
+.vesa_setup:
+    mov bx, 0x500
+    mov di, 0x500 + vesa_info_t_size
+    call vesa_find_best_mode
+    cmp ax, 0x0
+    jne .load_vesa_mode
+    mov bx, VESA_MODE_FIND_FAIL_MSG
+    call print_msg_16
+    jmp $
+
+.load_vesa_mode:
+    call vesa_set_mode
+    cmp ax, 0x0
+    je .post_vesa_setup
+    mov bx, VESA_MODE_SET_FAIL_MSG
+    call print_msg_16
+    jmp $
+
+.post_vesa_setup:
     ; disable interrupts until we've in protected mode and have set up the
     ; Interrupt Descriptor Table (IDT).
     cli
@@ -57,6 +89,35 @@ print_msg_16:
     pop ax
     ret
 
+print_hex_byte_16:
+    push ax
+    push bx
+
+    mov bx, ax
+
+    shr al, 4
+    add al, '0'
+    cmp al, '9'
+    jle .byte1
+    add al, 0x7
+.byte1:
+    mov ah, 0x0e
+    int 0x10
+    mov al, bl
+    and al, 0x0F
+    add al, '0'
+    cmp al, '9',
+    jle .byte2
+    add al, 0x7
+.byte2:
+    mov ah, 0x0e
+    int 0x10
+
+    pop bx
+    pop ax
+    ret
+
+
 [bits 32]
 protected_start:
     ; Set up the protected mode memory model for the kernel
@@ -67,7 +128,7 @@ protected_start:
     mov fs, ax
     mov gs, ax
 
-    mov ebp, 0x90000
+    mov ebp, 0x7C00
     mov esp, ebp
 
     ; let the world know we made it this far again
@@ -88,13 +149,21 @@ protected_start:
 
 
 KERNEL_START_MSG:
-    db "V", 0x84, "lkommen!", 0
+    db "V", 0x84, "lkommen! ", 0
+
+VESA_LOAD_FAIL_MSG:
+    db "Vi hittar VESA inte", 0
+VESA_MODE_FIND_FAIL_MSG:
+    db "Vi hittar VESA mode inte", 0
+VESA_MODE_SET_FAIL_MSG:
+    db "Vi g", 0xF6, "r VESA mode inte", 0
 
 PROTECTED_START_MSG:
     db "Hej! ", 0
 
 %include "src/kärna/gdt.asm"
 %include "src/kärna/vga_text.asm"
+%include "src/kärna/vga_video.asm"
 %include "src/kärna/vesa.asm"
 %include "src/kärna/pic.asm"
 %include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area
