@@ -24,7 +24,7 @@ struc vesa_mode_t
     .win_granularity    resw 1
     .win_size           resw 1
     .win_a_segment      resw 1
-    .win_b_segment      resw 2
+    .win_b_segment      resw 1
     .win_func_ptr       resd 1
     .bytes_per_scanline resw 1
 
@@ -153,9 +153,9 @@ vesa_set_mode:
     mov ax, 0x1
     jmp .done
 
+.set_mode:
     push bx
 
-.set_mode:
     or cx, 0x4000
     mov bx, cx
     mov ax, 0x4F02
@@ -178,6 +178,8 @@ vesa_set_mode:
     mov [bx + video_mode_info_t.framebuffer_ptr], ax
     mov ax, [di + vesa_mode_t.framebuffer_ptr + 2]
     mov [bx + video_mode_info_t.framebuffer_ptr + 2], ax
+
+    mov ax, 0x0
 
 .done_post_set:
     pop bx

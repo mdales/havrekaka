@@ -15,3 +15,35 @@ video_mode_info:
         at video_mode_info_t.height,          dw 25
         at video_mode_info_t.framebuffer_ptr, dq 0x00000000b8000000
     iend
+
+
+; Inputs:
+;     none
+; Returns:
+;     none
+; Clobbers:
+;     none
+clear_video_screen:
+    push es
+    push edx
+    push ecx
+    push ebx
+
+    mov bx, VESA_SEG
+    mov es, bx
+    mov edx, 0x0
+    mov ebx, 0xFFFFFFFF
+.loop:
+    mov [es:edx], ebx
+    add edx, 4
+    cmp edx, 1600 * 1200 * 2
+    jne .loop
+
+    ; set the cursor back to zero
+    mov word [cursor], 0x0
+
+    pop ebx
+    pop ecx
+    pop edx
+    pop es
+    ret

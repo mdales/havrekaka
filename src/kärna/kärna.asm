@@ -54,6 +54,16 @@ start:
     jmp $
 
 .post_vesa_setup:
+    ; update the GDT entry for VESA with the LFB address
+    mov bx, video_mode_info
+    mov di, gdt.sd_vesa
+    mov ax, [bx + video_mode_info_t.framebuffer_ptr]
+    mov [di + gtd_entry_t.base_0_15], ax
+    mov ax, [bx + video_mode_info_t.framebuffer_ptr + 2]
+    mov [di + gtd_entry_t.base_16_23], al
+    mov [di + gtd_entry_t.base_24_31], ah
+
+
     ; disable interrupts until we've in protected mode and have set up the
     ; Interrupt Descriptor Table (IDT).
     cli
@@ -133,7 +143,7 @@ protected_start:
 
     ; let the world know we made it this far again
     mov ebx, PROTECTED_START_MSG
-    call clear_vga_screen
+    call clear_video_screen
     call print_vga_string
 
     ; set up interrupt table and enable interrupts again
