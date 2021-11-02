@@ -2,7 +2,7 @@
 [bits 16]
 
 ; at some point we'll be more clever in our build, but for now hard coded
-KERNEL_SECTOR_OFFSET equ 2
+KERNEL_SECTOR_OFFSET equ 3
 KERNEL_SECTOR_COUNT equ 7
 
 start:
