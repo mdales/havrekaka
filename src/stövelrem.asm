@@ -24,6 +24,9 @@ struc catalogue_header_t
 endstruc
 
 start:
+    ; at start of day dl should contain the drive number from the BIOS
+    ; mov [DRIVE_NUMBER], dl
+
 	; Set up real-mode memory map
     mov ax, 0x0
     mov ds, ax
@@ -44,7 +47,7 @@ start:
 	mov es, bx
     mov bx, AFTER_MBR
     call load_catalogue
-    jc .load_fail
+    jc .load_fail_cat
 
     ; Hopefully the offset/size will fit within 16 bits each
     ; some trickery to get number of sectors - note we skip
@@ -59,13 +62,22 @@ start:
                ; loader is exactly a multiple of the sectore size
 
     call load_sectors
-    jc .load_fail
+    jc .load_fail_kern
 
     jmp AFTER_MBR
 
-.load_fail:
-    mov bx, LOAD_ERROR_MSG
+.load_fail_cat:
+    mov bx, LOAD_CAT_ERROR_MSG
     call print_msg
+    mov al, [DRIVE_NUMBER]
+    call print_hex_byte_16
+    jmp $
+
+.load_fail_kern:
+    mov bx, LOAD_KERNEL_ERROR_MSG
+    call print_msg
+    mov al, [DRIVE_NUMBER]
+    call print_hex_byte_16
     jmp $
 
 
@@ -84,7 +96,7 @@ load_catalogue:
     mov cl, CATALOGUE_SECTOR_OFFSET
 	mov ch, 0
 	mov dh, 0
-	mov dl, 0
+	mov dl, [DRIVE_NUMBER]
     mov al, CATALOGUE_SECTOR_COUNT
 
     call load_sectors
@@ -115,6 +127,8 @@ logical_to_chs:
     div word [NUMBER_OF_HEADS]
     mov dh, dl
     mov ch, al
+
+    mov dl, [DRIVE_NUMBER]
 
     pop bx
     ret
@@ -178,8 +192,6 @@ print_hex_byte_16:
     pop ax
     ret
 
-
-
 print_msg:
     push ax
     push bx
@@ -199,14 +211,20 @@ print_msg:
 START_MSG:
     db "B", 0x94, "rjar... ", 0
 
-LOAD_ERROR_MSG:
-    db "Failed to load kärna.bin", 0
+LOAD_CAT_ERROR_MSG:
+    db "Failed to load catalogue from ", 0
+
+LOAD_KERNEL_ERROR_MSG:
+    db "Failed to load kärna.bin from ", 0
 
 SECTORS_PER_TRACK:
     dw 18
 
 NUMBER_OF_HEADS:
     dw 2
+
+DRIVE_NUMBER:
+    db 0x80
 
 times 510-($-$$) db 0
 dw 0xaa55
