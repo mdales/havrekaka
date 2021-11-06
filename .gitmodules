@@ -1,0 +1,3 @@
+[submodule "ThirdParty/tamzen-font"]
+	path = ThirdParty/tamzen-font
+	url = https://github.com/sunaku/tamzen-font.git
