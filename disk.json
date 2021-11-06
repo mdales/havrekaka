@@ -1,6 +1,7 @@
 {
     "MBR": "bin/stövelrem.bin",
     "Files": [
-        "bin/kärna.bin"
+        "bin/kärna.bin",
+        "bin/font.t"
     ]
 }
