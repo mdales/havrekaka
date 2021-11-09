@@ -17,7 +17,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"unsafe"
 )
 
 const SectorSize = 512
@@ -146,7 +145,11 @@ func main() {
 			Offset: offset,
 			Length: uint64(stats.Size()),
 		}
-		meta.EntrySize = uint16(unsafe.Sizeof(meta)) + uint16(len(converted_filename))
+		// unsafe.Sizeof(meta) doesn't give the same result as binary.Write :/
+		// the usual solution is just to note the seek value of the end of the file
+		// before and after writing, but I need the data in the struct... so for
+		// now we hard code it.
+		meta.EntrySize = uint16(20) + uint16(len(converted_filename))
 		entries[i] = meta
 
 		// round offset up to next sector size

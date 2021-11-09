@@ -66,32 +66,30 @@ print_vga_string:
 
 
 ; Inputs:
-;     bl: ASCII character
+;     al: ASCII character
 ; Returns:
 ;     none
 ; Clobbers:
 ;     none
 print_vga_character:
     push es
-    push ebx
     push edx
 
     mov edx, VGA_TEXT_SEG
     mov es, edx
     mov dx, [cursor]
 
-    mov byte [es:edx], bl
+    mov byte [es:edx], al
     add edx, 2
     mov [cursor], dx
 
     pop edx
-    pop ebx
     pop es
     ret
 
 
 ; Inputs:
-;     bl: byte to print
+;     al: byte to print
 ; Returns:
 ;     none
 ; Clobbers:
@@ -99,34 +97,34 @@ print_vga_character:
 print_vga_hex_byte:
     push es
     push edx
-    push ebx
+    push eax
 
     mov edx, VGA_TEXT_SEG
     mov es, edx
     mov dx, [cursor]
 
-    shr bl, 4
-    add bl, '0'
-    cmp bl, '9'
+    shr al, 4
+    add al, '0'
+    cmp al, '9'
     jle .byte1
-    add bl, 0x7
+    add al, 0x7
 .byte1:
-    mov byte [es:edx], bl
+    mov byte [es:edx], al
     add edx, 0x2
-    pop ebx
-    push ebx
-    and bl, 0x0F
-    add bl, '0'
-    cmp bl, '9',
+    pop eax
+    push eax
+    and al, 0x0F
+    add al, '0'
+    cmp al, '9',
     jle .byte2
-    add bl, 0x7
+    add al, 0x7
 .byte2:
-    mov byte [es:edx], bl
+    mov byte [es:edx], al
     add edx, 0x2
 
     mov [cursor], dx
 
-    pop ebx
+    pop eax
     pop edx
     pop es
     ret

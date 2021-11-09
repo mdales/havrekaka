@@ -177,6 +177,7 @@ IRQ_HANDLER 47, 15
 
 non_generic_isr:
     push ebx
+    push eax
 
     mov bl, 0
     mov bh, 10
@@ -185,28 +186,29 @@ non_generic_isr:
     mov ebx, INTERRUPT_MSG
     call print_vga_string
 
-    mov byte bl, [esp + 4]
+    mov byte al, [esp + 4]
     call print_vga_hex_byte
-    mov byte bl, [esp + 5]
+    mov byte al, [esp + 5]
     call print_vga_hex_byte
-    mov byte bl, [esp + 6]
+    mov byte al, [esp + 6]
     call print_vga_hex_byte
-    mov byte bl, [esp + 7]
+    mov byte al, [esp + 7]
     call print_vga_hex_byte
 
     mov bx, [cursor]
     add bx, 2
     mov word [cursor], bx
 
-    mov byte bl, [esp + 8]
+    mov byte al, [esp + 8]
     call print_vga_hex_byte
-    mov byte bl, [esp + 9]
+    mov byte al, [esp + 9]
     call print_vga_hex_byte
-    mov byte bl, [esp + 10]
+    mov byte al, [esp + 10]
     call print_vga_hex_byte
-    mov byte bl, [esp + 11]
+    mov byte al, [esp + 11]
     call print_vga_hex_byte
 
+    pop eax
     pop ebx
     add esp, 8
     sti
@@ -232,7 +234,6 @@ irq_routine:
     mov ebx, IRQ_MSG
     call print_vga_string
 
-    mov bl, al
     call print_vga_hex_byte
 
     cmp al, 1
@@ -244,7 +245,6 @@ irq_routine:
     add bx, 2
     mov word [cursor], bx
 
-    mov bl, al
     call print_vga_hex_byte
     jmp .done
 
@@ -264,7 +264,7 @@ irq_routine:
     mov al, 0
 .store:
     mov [spinner_offset], al
-
+    mov al, bl
     call print_vga_character
 
 
