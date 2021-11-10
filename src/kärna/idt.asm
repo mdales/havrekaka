@@ -298,11 +298,6 @@ spinner_pattern:
 spinner_offset:
     db 0
 
-INTERRUPT_MSG:
-    db " Interrupt called ", 0
-IRQ_MSG:
-    db " IRQ called ", 0
-
 IDT_DESCRIPTOR: ; to be loaded by instruction lidt
     ; we'll just start with the minimal length
     dw (ISR_COUNT * ISR_ENTRY_SIZE) - 1

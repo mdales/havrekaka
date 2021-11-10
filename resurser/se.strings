@@ -1,0 +1,9 @@
+{
+    "PROTECTED_START_MSG": "Hej! ",
+
+    "FONT_FILE_NAME": "font.t",
+    "FAILED_TO_FIND_FONT_MSG": " ENOFONT",
+
+    "INTERRUPT_MSG": " Interrupt called ",
+    "IRQ_MSG": " IRQ called "
+}

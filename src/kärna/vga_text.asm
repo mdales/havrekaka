@@ -41,24 +41,27 @@ print_vga_string:
     push es
     push eax
     push ebx
+    push ecx
     push edx
 
     mov edx, VGA_TEXT_SEG
     mov es, edx
     mov dx, [cursor]
 
+    mov ecx, [ebx]
+    add ebx, 4
+
 .loop:
     mov al, [ebx]
-    cmp al, 0
-    je .done
-    mov byte [es:edx], al
+    mov [es:edx], al
     add edx, 2
     inc ebx
-    jmp .loop
-.done:
+    loop .loop
+
     mov [cursor], dx
 
     pop edx
+    pop ecx
     pop ebx
     pop eax
     pop es

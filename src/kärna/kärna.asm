@@ -178,16 +178,6 @@ VESA_MODE_FIND_FAIL_MSG:
 VESA_MODE_SET_FAIL_MSG:
     db "Vi g", 0xF6, "r VESA mode inte", 0
 
-PROTECTED_START_MSG:
-    db "Hej! ", 0
-
-FAILED_TO_FIND_FONT_MSG:
-    db " ENOFONT", 0
-
-FONT_FILE_NAME:
-    dd 0x0006,
-    db "font.t"
-
 %include "src/kärna/gdt.asm"
 %include "src/kärna/vga_text.asm"
 %include "src/kärna/vga_video.asm"
@@ -196,4 +186,5 @@ FONT_FILE_NAME:
 %include "src/kärna/ata.asm"
 %include "src/kärna/fs.asm"
 %include "src/kärna/lib.asm"
+%include "bin/strings.asm"
 %include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area

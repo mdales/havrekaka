@@ -124,7 +124,6 @@ func main() {
 		return runes[i] < runes[j]
 	})
 	for _, rune := range runes {
-		fmt.Printf("0x%08x: 0x%02x\n", rune, runemap[rune])
 		err = binary.Write(g, binary.LittleEndian, rune)
 		if err != nil {
 			fmt.Printf("Failed to write rune number: %v", err)
