@@ -53,7 +53,7 @@ ata_await_data:
 ; Inputs:
 ;     eax   = LBA of sector to read
 ;     bl    - number of sectors to read
-;     es:di - location to write data
+;     es:edi - location to write data
 ; Returns:
 ;     none
 ; Clobbers:
@@ -71,15 +71,15 @@ ata_read_sectors:
 
     call ata_await_busy
 
-    mov ebx, eax
+    mov ecx, eax
     shr eax, 24
-    ; and eax, 0xF
+    and eax, 0xF
     or  eax, 0xE0
     outb 0x1F6
 
     mov al, bl
     outb 0x1F2
-    mov eax, ebx
+    mov eax, ecx
     outb 0x1F3
     shr eax, 8
     outb 0x1F4
@@ -95,8 +95,8 @@ ata_read_sectors:
     mov ecx, 256
 .word_loop:
     inw 0x1F0
-    mov [es:di], ax
-    add di, 2
+    mov [es:edi], ax
+    add edi, 2
 
     sub ecx, 1
     jnz .word_loop

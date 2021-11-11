@@ -46,12 +46,12 @@ start:
     jmp $
 
 .load_vesa_mode:
-    ; call vesa_set_mode
-    ; cmp ax, 0x0
-    ; je .post_vesa_setup
-    ; mov bx, VESA_MODE_SET_FAIL_MSG
-    ; call print_msg_16
-    ; jmp $
+    call vesa_set_mode
+    cmp ax, 0x0
+    je .post_vesa_setup
+    mov bx, VESA_MODE_SET_FAIL_MSG
+    call print_msg_16
+    jmp $
 
 .post_vesa_setup:
     ; update the GDT entry for VESA with the LFB address
@@ -142,23 +142,30 @@ protected_start:
     mov esp, ebp
 
     ; let the world know we made it this far again
-    mov ebx, PROTECTED_START_MSG
-    ; call clear_video_screen
-    call clear_vga_screen
-    call print_vga_string
+    ; mov ebx, PROTECTED_START_MSG
+    ; call clear_vga_screen
+    ; call print_vga_string
+    call clear_video_screen
 
     ; set up interrupt table and enable interrupts again
     call build_idt
     sti
 
-    mov ebx, PROTECTED_START_MSG
-    call print_vga_string
+    ; mov ebx, PROTECTED_START_MSG
+    ; call print_vga_string
 
-    mov eax, FONT_FILE_NAME
-    call locate_file
-    cmp eax, 0
-    jne .main
-    mov eax, ebx
+    ; to make VESA mode actually useful we need to load up
+    ; a font
+    call load_video_font
+    cmp eax, 0x0
+    jne .font_fail
+
+    mov eax, 'B'
+    call print_video_character
+
+    jmp .main
+
+.font_fail:
     call print_vga_hex_byte
     mov ebx, FAILED_TO_FIND_FONT_MSG
     call print_vga_string
@@ -186,5 +193,6 @@ VESA_MODE_SET_FAIL_MSG:
 %include "src/kärna/ata.asm"
 %include "src/kärna/fs.asm"
 %include "src/kärna/lib.asm"
+%include "src/kärna/typsnitt.asm"
 %include "bin/strings.asm"
 %include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area
