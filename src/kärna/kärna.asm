@@ -160,8 +160,8 @@ protected_start:
     cmp eax, 0x0
     jne .font_fail
 
-    mov eax, 'B'
-    call print_video_character
+    mov eax, PROTECTED_START_MSG
+    call print_video_string
 
     jmp .main
 

@@ -41,7 +41,7 @@ clear_video_screen:
     jne .loop
 
     ; set the cursor back to zero
-    mov word [cursor], 0x0
+    mov dword [cursor], 0x0
 
     pop ebx
     pop ecx
@@ -60,6 +60,7 @@ print_video_character:
     push es
     push edx
     push edi
+    push ecx
     push ebx
     push eax
 
@@ -69,7 +70,7 @@ print_video_character:
 
     mov edx, VESA_SEG
     mov es, edx
-    mov edi, 0x0; [cursor]
+    mov edi, [cursor]
 
     ; first pass, hardwire some vals here
     mov cl, 20
@@ -95,11 +96,69 @@ print_video_character:
     sub cl, 1
     jnz .yloop
 
+    sub edi, (1600 * 2 * 20)
+    add edi, (10 * 2)
     mov [cursor], edi
 
     pop eax
     pop ebx
+    pop ecx
     pop edi
     pop edx
     pop es
+    ret
+
+; Inputs:
+;     eax: string to print
+; Returns:
+;     none
+; Clobbers:
+;     none
+print_video_string:
+    push edx
+    push ecx
+    push ebx
+    push eax
+
+    mov ebx, eax
+
+    mov ecx, [ebx]
+    add ebx, 4
+    mov eax, 0x0
+.loop:
+    mov edx, 0x0
+    mov dl, [ebx]
+    inc ebx
+
+    mov dh, dl
+    and dh, 0b11000000   ; this needs to be updated to cope with for than 16 bit chars!
+    cmp dh, 0b11000000
+    jne .print
+
+.unicode:
+    mov dh, 0x0
+    and dl, 0b00111111
+    or eax, edx
+    shl eax, 6
+    sub ecx, 1
+    jnz .loop
+    ; unknown, and out of data, so just print a holder
+    mov eax, '?'
+    call print_vga_character
+    jmp .done
+
+.print:
+    mov dh, 0x0
+    and dl, 0b01111111
+    or eax, edx
+    call print_video_character
+    mov eax, 0x0
+    sub ecx, 1
+    jnz .loop
+
+.done:
+    pop eax
+    pop ebx
+    pop ecx
+    pop edx
     ret

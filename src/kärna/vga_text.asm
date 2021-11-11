@@ -166,4 +166,4 @@ set_vga_cursor_position:
     ret
 
 ; memory location to store current offset in VGA
-cursor: dw 0x0
+cursor: dd 0x0
