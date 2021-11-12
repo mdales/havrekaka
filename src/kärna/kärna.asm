@@ -200,7 +200,7 @@ protected_start:
     call set_video_cursor_position
     loop .lll
 
-
+    call scan_pci
     jmp .main
 
 .font_fail:
@@ -224,13 +224,14 @@ VESA_MODE_SET_FAIL_MSG:
     db "Vi g", 0xF6, "r VESA mode inte", 0
 
 %include "src/kärna/gdt.asm"
+%include "src/kärna/lib.asm"
 %include "src/kärna/vga_text.asm"
 %include "src/kärna/vga_video.asm"
 %include "src/kärna/vesa.asm"
 %include "src/kärna/pic.asm"
 %include "src/kärna/ata.asm"
 %include "src/kärna/fs.asm"
-%include "src/kärna/lib.asm"
+%include "src/kärna/pci.asm"
 %include "src/kärna/typsnitt.asm"
 %include "bin/strings.asm"
 %include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area

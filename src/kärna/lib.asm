@@ -1,5 +1,30 @@
 [bits 32]
 
+%macro inb 1
+    mov dx, %1
+    in al, dx
+%endmacro
+
+%macro inw 1
+    mov dx, %1
+    in ax, dx
+%endmacro
+
+%macro ind 1
+    mov dx, %1
+    in eax, dx
+%endmacro
+
+%macro outb 1
+    mov dx, %1
+    out dx, al
+%endmacro
+
+%macro outd 1
+    mov dx, %1
+    out dx, eax
+%endmacro
+
 ; Inputs:
 ;     eax - pointer to first string
 ;     ebx - pointer to second string

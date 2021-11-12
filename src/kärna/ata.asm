@@ -3,21 +3,6 @@
 STATUS_BUSY equ 0x80
 STATUS_DATA_REQEST equ 0x04
 
-%macro inb 1
-    mov dx, %1
-    in al, dx
-%endmacro
-
-%macro inw 1
-    mov dx, %1
-    in ax, dx
-%endmacro
-
-%macro outb 1
-    mov dx, %1
-    out dx, al
-%endmacro
-
 ; Inputs:
 ;     none
 ; Returns:
