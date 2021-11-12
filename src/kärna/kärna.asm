@@ -147,9 +147,6 @@ protected_start:
     ; call print_vga_string
     call clear_video_screen
 
-    ; set up interrupt table and enable interrupts again
-    call build_idt
-    sti
 
     ; mov ebx, PROTECTED_START_MSG
     ; call print_vga_string
@@ -162,6 +159,47 @@ protected_start:
 
     mov eax, PROTECTED_START_MSG
     call print_video_string
+
+    ; set up interrupt table and enable interrupts again
+    call build_idt
+    sti
+
+    mov al, 0
+    mov ah, 1
+    call set_video_cursor_position
+    mov eax, TEST_1
+    call print_video_string
+    mov al, 0
+    mov ah, 2
+    call set_video_cursor_position
+    mov eax, TEST_2
+    call print_video_string
+    mov al, 0
+    mov ah, 3
+    call set_video_cursor_position
+    mov eax, TEST_3
+    call print_video_string
+
+    mov al, 40
+    mov ah, 0
+    call set_video_cursor_position
+    mov eax, 'Q'
+    call bits_for_character
+    mov ebx, eax
+    mov ecx, 20
+.lll:
+    mov ax, [ebx]
+    inc ebx
+    inc ebx
+    call print_video_hex_byte
+    shr eax, 8
+    call print_video_hex_byte
+    mov al, 40
+    mov ah, 21
+    sub ah, cl
+    call set_video_cursor_position
+    loop .lll
+
 
     jmp .main
 

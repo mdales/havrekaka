@@ -179,34 +179,36 @@ non_generic_isr:
     push ebx
     push eax
 
-    ; mov bl, 0
-    ; mov bh, 10
-    ; call set_vga_cursor_position
+    mov ebx, eax
 
-    ; mov ebx, INTERRUPT_MSG
-    ; call print_vga_string
+    mov al, 0
+    mov ah, 10
+    call set_video_cursor_position
 
-    ; mov byte al, [esp + 4]
-    ; call print_vga_hex_byte
-    ; mov byte al, [esp + 5]
-    ; call print_vga_hex_byte
-    ; mov byte al, [esp + 6]
-    ; call print_vga_hex_byte
-    ; mov byte al, [esp + 7]
-    ; call print_vga_hex_byte
+    mov eax, INTERRUPT_MSG
+    call print_video_string
 
-    ; mov bx, [cursor]
-    ; add bx, 2
-    ; mov word [cursor], bx
+    mov byte al, [esp + 4]
+    call print_video_hex_byte
+    mov byte al, [esp + 5]
+    call print_video_hex_byte
+    mov byte al, [esp + 6]
+    call print_video_hex_byte
+    mov byte al, [esp + 7]
+    call print_video_hex_byte
 
-    ; mov byte al, [esp + 8]
-    ; call print_vga_hex_byte
-    ; mov byte al, [esp + 9]
-    ; call print_vga_hex_byte
-    ; mov byte al, [esp + 10]
-    ; call print_vga_hex_byte
-    ; mov byte al, [esp + 11]
-    ; call print_vga_hex_byte
+    mov bx, [cursor]
+    add bx, 10
+    mov word [cursor], bx
+
+    mov byte al, [esp + 8]
+    call print_video_hex_byte
+    mov byte al, [esp + 9]
+    call print_video_hex_byte
+    mov byte al, [esp + 10]
+    call print_video_hex_byte
+    mov byte al, [esp + 11]
+    call print_video_hex_byte
 
     pop eax
     pop ebx
@@ -219,53 +221,56 @@ irq_routine:
     push ebx
     push edx
 
-    ; mov dx, [cursor]
+    mov dx, [cursor]
 
     ; if it's not the timer interrupt, print it out.
     mov byte al, [esp + 12]
     cmp al, 0
     je .tick
 
-    ; ; default path
-    ; mov bl, 0
-    ; mov bh, 11
-    ; call set_vga_cursor_position
+    ; default path
+    mov dl, al
+    mov al, 0
+    mov ah, 11
+    call set_video_cursor_position
 
-    ; mov ebx, IRQ_MSG
-    ; call print_vga_string
+    mov eax, IRQ_MSG
+    call print_video_string
 
-    ; call print_vga_hex_byte
+    mov al, dl
+    call print_video_hex_byte
 
     cmp al, 1
     jne .done
     ;  this is the keyboard interrupt, so read the keycode
     in al, 0x60
 
-    ; mov word bx, [cursor]
-    ; add bx, 2
-    ; mov word [cursor], bx
+    mov word bx, [cursor]
+    add bx, 10 ; cough - glyph width
+    mov word [cursor], bx
 
-    ; call print_vga_hex_byte
+    call print_video_hex_byte
     jmp .done
 
 .tick:
-;     mov bl, 79
-;     mov bh, 0
-;     call set_vga_cursor_position
+    mov al, 20
+    mov ah, 0
+    call set_video_cursor_position
 
-;     xor eax, eax
-;     mov al, [spinner_offset]
-;     lea ebx, [spinner_pattern]
-;     add ebx, eax
-;     mov bl, [ebx]
-;     inc al
-;     cmp al, 4
-;     jne .store
-;     mov al, 0
-; .store:
-;     mov [spinner_offset], al
-;     mov al, bl
-;     call print_vga_character
+    mov eax, 0x0
+    mov al, [spinner_offset]
+    lea ebx, [spinner_pattern]
+    add ebx, eax
+    mov bl, [ebx]
+    inc al
+    cmp al, 4
+    jne .store
+    mov al, 0
+.store:
+    mov [spinner_offset], al
+    mov eax, 0x0
+    mov al, bl
+    call print_video_character
 
 
 
@@ -273,7 +278,7 @@ irq_routine:
     ; clear IRQ!
     call clear_pic
 
-    ; mov word [cursor], dx
+    mov word [cursor], dx
 
     pop edx
     pop ebx
@@ -285,10 +290,10 @@ irq_routine:
 
 generic_isr:
     cli
-    push ebx
-    ; mov ebx, INTERRUPT_MSG
-    ; call print_vga_string
-    pop ebx
+    push eax
+    mov eax, INTERRUPT_MSG
+    call print_video_string
+    pop eax
     jmp $
     sti
     iret

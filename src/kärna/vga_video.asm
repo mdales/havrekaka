@@ -90,18 +90,22 @@ print_video_character:
     ; first pass, hardwire some vals here
     mov cl, 20
 .yloop:
-    mov ax, [ebx]
-    add ebx, 2
+    mov ah, [ebx]
+    inc ebx
+    mov al, [ebx]
+    inc ebx
 
     mov ch, 10
 .xloop:
     mov dx, ax
-    and dx, 0b1000000000
-    cmp dx, 0b1000000000
-    jne .nothing
+    and dx, 0x8000
+    jz .nothing
 
     mov byte [es:edi], 0x0
+    jmp .post_pixel
 .nothing:
+    mov byte [es:edi], 0x1E
+.post_pixel:
     add edi, 1
     shl ax, 1
     sub ch, 1
@@ -197,9 +201,10 @@ set_video_cursor_position:
 
     push eax
     push ebx
+    push ecx
     push edx
 
-    mov dx, ax ; back up args
+    mov ecx, eax ; back up args
 
     mov ebx, video_mode_info
     mov eax, 0x0
@@ -207,12 +212,12 @@ set_video_cursor_position:
     mov ebx, 20 ; cough - glyph height
     mul ebx
     mov ebx, 0x0
-    mov bl, dh
+    mov bl, ch
     mul ebx
 
     mov ebx, eax
     mov eax, 0x0
-    mov al, dl
+    mov al, cl
     mov edx, (1 * 10)
     mul edx
     add eax, ebx
@@ -220,6 +225,7 @@ set_video_cursor_position:
     mov [cursor], eax
 
     pop edx
+    pop ecx
     pop ebx
     pop eax
     ret

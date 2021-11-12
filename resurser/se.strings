@@ -1,9 +1,12 @@
 {
     "PROTECTED_START_MSG": "Hej världen! ",
+    "TEST_1": "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ",
+    "TEST_2": "abcdefghijklmnopqrstuvwxyzåäö",
+    "TEST_3": "0123456789!£$%^&*()-=_+[]{};':@",
 
     "FONT_FILE_NAME": "font.t",
     "FAILED_TO_FIND_FONT_MSG": " ENOFONT",
 
     "INTERRUPT_MSG": " Interrupt called ",
-    "IRQ_MSG": " IRQ called "
+    "IRQ_MSG": "IRQ called "
 }
