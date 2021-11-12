@@ -6,6 +6,8 @@ struc video_mode_info_t
     .type               resb 1      ; 0 == text, 1 == graphics
     .width              resw 1
     .height             resw 1
+    .bits_per_pixel     resb 1
+    .bytes_per_scanline resw 1
     .framebuffer_ptr    resq 1      ; we'll look silly when 128 bit CPUs are the norm
 endstruc
 
@@ -29,20 +31,33 @@ clear_video_screen:
     push edx
     push ecx
     push ebx
+    push eax
+
+    mov ebx, video_mode_info
+    mov eax, 0
+    mov ax, [ebx + video_mode_info_t.width]
+    mov edx, 0
+    mov dx, [ebx + video_mode_info_t.height]
+    mul edx
+    mov edx, 0
+    mov dl, [ebx + video_mode_info_t.bits_per_pixel]
+    shr edx, 3
+    mul edx
 
     mov bx, VESA_SEG
     mov es, bx
     mov edx, 0x0
-    mov ebx, 0xFFFFFFFF
+    mov ebx, 0x1E1E1E1E
 .loop:
     mov [es:edx], ebx
     add edx, 4
-    cmp edx, 1600 * 1200 * 2
-    jne .loop
+    cmp edx, eax
+    jl .loop
 
     ; set the cursor back to zero
     mov dword [cursor], 0x0
 
+    pop eax
     pop ebx
     pop ecx
     pop edx
@@ -85,19 +100,27 @@ print_video_character:
     cmp dx, 0b1000000000
     jne .nothing
 
-    mov word [es:edi], 0x0
+    mov byte [es:edi], 0x0
 .nothing:
-    add edi, 2
+    add edi, 1
     shl ax, 1
     sub ch, 1
     jnz .xloop
 
-    add edi, (1590 * 2) ; cough
+    mov eax, video_mode_info
+    mov edx, 0
+    mov dx, [eax + video_mode_info_t.bytes_per_scanline]
+    add edi, edx
+    sub edi, 10 ; cough - should be glyth width * bpp
     sub cl, 1
     jnz .yloop
 
-    sub edi, (1600 * 2 * 20)
-    add edi, (10 * 2)
+    ; tidy up cursor value. note edx should contain scan line width at this point
+    mov eax, edx
+    mov edx, 20 ; cough - glyph height
+    mul edx
+    sub edi, eax
+    add edi, 10 ; cough - should be glyph width * bpp
     mov [cursor], edi
 
     pop eax
@@ -161,4 +184,80 @@ print_video_string:
     pop ebx
     pop ecx
     pop edx
+    ret
+
+; Inputs:
+;     al: cursor x position
+;     ah: cursor y position
+; Returns:
+;     none
+; Clobbers:
+;     none
+set_video_cursor_position:
+
+    push eax
+    push ebx
+    push edx
+
+    mov dx, ax ; back up args
+
+    mov ebx, video_mode_info
+    mov eax, 0x0
+    mov ax, [ebx + video_mode_info_t.bytes_per_scanline]
+    mov ebx, 20 ; cough - glyph height
+    mul ebx
+    mov ebx, 0x0
+    mov bl, dh
+    mul ebx
+
+    mov ebx, eax
+    mov eax, 0x0
+    mov al, dl
+    mov edx, (1 * 10)
+    mul edx
+    add eax, ebx
+
+    mov [cursor], eax
+
+    pop edx
+    pop ebx
+    pop eax
+    ret
+
+; Inputs:
+;     al: byte to print
+; Returns:
+;     none
+; Clobbers:
+;     none
+print_video_hex_byte:
+    push es
+    push edx
+    push eax
+
+    ; ensure upper bits are clear
+    mov dl, al
+    mov eax, 0x0
+    mov al, dl
+
+    shr al, 4
+    add al, '0'
+    cmp al, '9'
+    jle .byte1
+    add al, 0x7
+.byte1:
+    call print_video_character
+
+    mov al, dl
+    and al, 0x0F
+    add al, '0'
+    cmp al, '9',
+    jle .byte2
+    add al, 0x7
+.byte2:
+    call print_video_character
+
+    pop eax
+    pop edx
+    pop es
     ret
