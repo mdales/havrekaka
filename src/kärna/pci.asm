@@ -66,6 +66,24 @@ scan_pci:
     shr eax, 8
     call print_video_hex_byte
 
+    mov eax, ' '
+    call print_video_character
+
+    mov eax, ebx
+    shl eax, 5
+    or eax, ecx
+    shl eax, 11
+    or eax, 0x80000008
+    outd 0x0CF8
+    ind 0x0CFC
+    call print_video_hex_byte
+    shr eax, 8
+    call print_video_hex_byte
+    shr eax, 8
+    call print_video_hex_byte
+    shr eax, 8
+    call print_video_hex_byte
+
 
 .next:
     cmp ecx, 0x0
