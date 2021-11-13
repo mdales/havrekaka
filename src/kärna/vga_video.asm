@@ -267,3 +267,58 @@ print_video_hex_byte:
     pop edx
     pop es
     ret
+
+TRIM_SIZE equ 0x20
+
+; Inputs:
+;     none
+; Returns:
+;     none
+; Clobbers:
+;     none
+paint_trim:
+    push eax
+    push ebx
+    push ecx
+    push edx
+    push es
+    push edi
+
+    mov ecx, VESA_SEG
+    mov es, ecx
+
+    mov ebx, video_mode_info
+    mov eax, 0x0
+    mov ax, [ebx + video_mode_info_t.height]
+    mov ecx, 0x0
+    mov cx, [ebx + video_mode_info_t.bytes_per_scanline]
+    mov edx, ecx
+    mul edx
+    mov edx, ecx
+
+    mov edi, eax
+    mov ecx, TRIM_SIZE
+.outer_loop:
+
+    sub edi, ecx
+
+    mov eax, 0x0
+.inner_loop:
+
+    mov [es:edi], al
+    inc edi
+
+    inc eax
+    cmp eax, ecx
+    jne .inner_loop
+
+    sub edi, edx
+    loop .outer_loop
+
+    pop edi
+    pop es
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret

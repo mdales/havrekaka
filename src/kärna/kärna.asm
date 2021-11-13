@@ -200,6 +200,7 @@ protected_start:
     call set_video_cursor_position
     loop .lll
 
+    call paint_trim
     call scan_pci
     jmp .main
 
