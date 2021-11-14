@@ -234,3 +234,35 @@ vesa_set_mode:
 .done:
     pop cx
     ret
+
+; Inputs:
+;     es:di - palette info
+; Returns:
+;     ax - 0x0 on success
+; Clobbers:
+;     none
+vesa_set_palette:
+    push bx
+    push cx
+    push dx
+    push di
+
+    mov ax, 0x4F09
+    mov cx, [es:di]
+    add di, 2
+    mov bl, 0x0
+    mov dx, 0x0
+    int 10h
+    cmp ax, 0x004F
+    jne .fail
+    mov ax, 0x0
+    jmp .done
+.fail:
+    mov ax, 0x1
+
+.done:
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    ret

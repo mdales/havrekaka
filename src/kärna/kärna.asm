@@ -48,10 +48,16 @@ start:
 .load_vesa_mode:
     call vesa_set_mode
     cmp ax, 0x0
-    je .post_vesa_setup
+    je .load_vesa_palette
     mov bx, VESA_MODE_SET_FAIL_MSG
     call print_msg_16
     jmp $
+
+.load_vesa_palette:
+    mov bx, ds
+    mov es, bx
+    mov di, island_joy_16
+    call vesa_set_palette
 
 .post_vesa_setup:
     ; update the GDT entry for VESA with the LFB address
@@ -200,6 +206,10 @@ protected_start:
     call set_video_cursor_position
     loop .lll
 
+    ; mov eax, ds
+    ; mov es, eax
+    ; mov edi, island_joy_16
+    ; call load_palette
     call paint_trim
     call scan_pci
     jmp .main
@@ -235,4 +245,5 @@ VESA_MODE_SET_FAIL_MSG:
 %include "src/kärna/pci.asm"
 %include "src/kärna/typsnitt.asm"
 %include "bin/strings.asm"
+%include "bin/färger.asm"
 %include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area

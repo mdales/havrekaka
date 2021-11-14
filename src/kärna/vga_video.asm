@@ -1,5 +1,7 @@
 [bits 32]
 
+DARK_COLOUR equ 0x03
+LIGHT_COLOUR equ 0x1E
 
 ; This info will either be a standard VGA mode or a VESA mode. It's assumed that we're
 struc video_mode_info_t
@@ -101,10 +103,10 @@ print_video_character:
     and dx, 0x8000
     jz .nothing
 
-    mov byte [es:edi], 0x0
+    mov byte [es:edi], DARK_COLOUR
     jmp .post_pixel
 .nothing:
-    mov byte [es:edi], 0x1E
+    mov byte [es:edi], LIGHT_COLOUR
 .post_pixel:
     add edi, 1
     shl ax, 1
@@ -268,7 +270,7 @@ print_video_hex_byte:
     pop es
     ret
 
-TRIM_SIZE equ 0x20
+TRIM_SIZE equ 0x12
 
 ; Inputs:
 ;     none
@@ -298,7 +300,7 @@ paint_trim:
 
     mov edi, eax
     mov ecx, TRIM_SIZE
-    shl ecx, 2
+    shl ecx, 3
 .outer_loop:
 
     sub edi, ecx
@@ -307,8 +309,11 @@ paint_trim:
 .inner_loop:
 
     mov ah, al
-    shr ah, 2
+    shr ah, 3
+    cmp ah, 0x0F
+    jg .skip
     mov [es:edi], ah
+.skip:
     inc edi
 
     inc al
