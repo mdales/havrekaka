@@ -298,18 +298,21 @@ paint_trim:
 
     mov edi, eax
     mov ecx, TRIM_SIZE
+    shl ecx, 2
 .outer_loop:
 
     sub edi, ecx
 
-    mov eax, 0x0
+    mov al, 0x0
 .inner_loop:
 
-    mov [es:edi], al
+    mov ah, al
+    shr ah, 2
+    mov [es:edi], ah
     inc edi
 
-    inc eax
-    cmp eax, ecx
+    inc al
+    cmp al, cl
     jne .inner_loop
 
     sub edi, edx
