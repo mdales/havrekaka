@@ -4,15 +4,23 @@
 ISR_COUNT equ 256
 ISR_ENTRY_SIZE equ 8
 
+struc interrupt_gate_t
+    .offset_0_15    resw 1
+    .selector       resw 1
+    .zero           resb 1
+    .flags          resb 1
+    .offset_16_31   resw 1
+endstruc
+
 %macro ISR_GATE_INSTALL 1
     ; assume ebx is set to correct address before we start
     mov eax, isr_%1
-    mov word [ebx], ax
+    mov word [ebx + interrupt_gate_t.offset_0_15], ax
     shr eax, 16
-    mov word [ebx + 6], ax
-    mov word [ebx + 2], CODE_SEG
-    mov byte [ebx + 4], 0x0
-    mov byte [ebx + 5], 0x8E
+    mov word [ebx + interrupt_gate_t.offset_16_31], ax
+    mov word [ebx + interrupt_gate_t.selector], CODE_SEG
+    mov byte [ebx + interrupt_gate_t.zero], 0x0
+    mov byte [ebx + interrupt_gate_t.flags], 0b10001110 ; 0x8E
     add ebx, 8
 %endmacro
 
@@ -84,12 +92,12 @@ build_idt:
     mov ecx, ISR_COUNT - (32 + 16)
 .loop:
     mov eax, generic_isr
-    mov word [ebx], ax
+    mov word [ebx + interrupt_gate_t.offset_0_15], ax
     shr eax, 16
-    mov word [ebx + 6], ax
-    mov word [ebx + 2], CODE_SEG
-    mov byte [ebx + 4], 0x0
-    mov byte [ebx + 5], 0x8E
+    mov word [ebx + interrupt_gate_t.offset_16_31], ax
+    mov word [ebx + interrupt_gate_t.selector], CODE_SEG
+    mov byte [ebx + interrupt_gate_t.zero], 0x0
+    mov byte [ebx + interrupt_gate_t.flags], 0b10001110
     add ebx, 8
     loop .loop
 
