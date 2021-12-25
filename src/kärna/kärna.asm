@@ -24,6 +24,33 @@ start:
     mov ch, 0x3F
     int 0x10
 
+    ; we need to know how much memory we have, which means we need to find out
+    ; where the extended bios information is, as that defines the upper bound of the first
+    ; 1 MB usable memory space. As a simple starting point let's just put 64KB in there.
+    mov ax, 0x40
+    mov es, ax
+    mov di, 0x000E
+    mov ax, [es:di]
+
+    ; ax is now the offset of the EBDA, but shifted 4 bits.
+    sub ax, 0x1000 ; start of 64KB segment before the EBDA
+
+    ; update the GDT entry for kernel data segment with the LFB address.
+    mov bx, ax
+    shr ax, 4
+    shl bx, 12
+    mov di, gdt.kheap
+    mov [di + gtd_entry_t.base_0_15], ax
+    mov [di + gtd_entry_t.base_16_23], bx
+    mov ah, 0x0
+    mov [di + gtd_entry_t.base_24_31], ah
+    mov al, 0b01000001
+    mov [di + gtd_entry_t.limit_and_flags], al
+    mov ax, 0x0000
+    mov [di + gtd_entry_t.limit_0_15], ax
+
+    mov es, ax
+
     ; We need to set up VESA now, so we can use int 0x10, but we'll only be
     ; able to draw to it once we've set up the GDT as we're using the LFB from
     ; VESA 2.0 for now
