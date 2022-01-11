@@ -12,6 +12,18 @@ struc interrupt_gate_t
     .offset_16_31   resw 1
 endstruc
 
+struc idt_descriptor_t
+    .size           resw 1
+    .offset         resd 1
+endstruc
+
+idt_descriptor:
+    istruc idt_descriptor_t
+        at idt_descriptor_t.size,   dw (ISR_COUNT * ISR_ENTRY_SIZE) - 1
+        at idt_descriptor_t.offset, dd 0 ; to be filled before use!
+    iend
+
+
 %macro ISR_GATE_INSTALL 1
     ; assume ebx is set to correct address before we start
     mov eax, isr_%1
@@ -24,8 +36,9 @@ endstruc
     add ebx, 8
 %endmacro
 
+
 ; Inputs:
-;     none
+;     eax - memory offset of table
 ; Returns:
 ;     none
 ; Clobbers:
@@ -35,8 +48,12 @@ build_idt:
     push ebx
     push ecx
 
-    ; the table will be put in memory at buffer
-    mov ebx, IDT_SPACE
+    mov ebx, eax
+
+    ; patch the IDT descriptor
+    mov eax, idt_descriptor
+    mov [eax + idt_descriptor_t.offset], ebx
+
     ; CPU interrupts
     ISR_GATE_INSTALL 0
     ISR_GATE_INSTALL 1
@@ -101,7 +118,7 @@ build_idt:
     add ebx, 8
     loop .loop
 
-    lidt [IDT_DESCRIPTOR]
+    lidt [idt_descriptor]
 
     pop ecx
     pop ebx
@@ -310,11 +327,5 @@ spinner_pattern:
     db '/', '-', '\', '|'
 spinner_offset:
     db 0
-
-IDT_DESCRIPTOR: ; to be loaded by instruction lidt
-    ; we'll just start with the minimal length
-    dw (ISR_COUNT * ISR_ENTRY_SIZE) - 1
-    ; we build the table at the end of the file
-    dd IDT_SPACE
 
 IDT_SPACE:

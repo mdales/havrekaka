@@ -39,16 +39,17 @@ start:
     mov bx, ax
     shr ax, 4
     shl bx, 12
-    mov di, gdt.kheap
-    mov [di + gtd_entry_t.base_0_15], ax
-    mov [di + gtd_entry_t.base_16_23], bx
+    mov di, gdt.sd_kheap
+    mov word [di + gdt_entry_t.base_0_15], ax
+    mov byte [di + gdt_entry_t.base_16_23], bl
     mov ah, 0x0
-    mov [di + gtd_entry_t.base_24_31], ah
+    mov byte [di + gdt_entry_t.base_24_31], ah
     mov al, 0b01000001
-    mov [di + gtd_entry_t.limit_and_flags], al
-    mov ax, 0x0000
-    mov [di + gtd_entry_t.limit_0_15], ax
+    mov byte [di + gdt_entry_t.limit_and_flags], al
+    mov ax, 0x00
+    mov word [di + gdt_entry_t.limit_0_15], ax
 
+    mov ax, 0x0
     mov es, ax
 
     ; We need to set up VESA now, so we can use int 0x10, but we'll only be
@@ -91,10 +92,10 @@ start:
     mov bx, video_mode_info
     mov di, gdt.sd_vesa
     mov ax, [bx + video_mode_info_t.framebuffer_ptr]
-    mov [di + gtd_entry_t.base_0_15], ax
+    mov [di + gdt_entry_t.base_0_15], ax
     mov ax, [bx + video_mode_info_t.framebuffer_ptr + 2]
-    mov [di + gtd_entry_t.base_16_23], al
-    mov [di + gtd_entry_t.base_24_31], ah
+    mov [di + gdt_entry_t.base_16_23], al
+    mov [di + gdt_entry_t.base_24_31], ah
 
 
     ; disable interrupts until we've in protected mode and have set up the
@@ -180,9 +181,10 @@ protected_start:
     ; call print_vga_string
     call clear_video_screen
 
+    ; ; Set up the kernel heap
+    mov eax, KERNEL_HEAP_SEG
+    call kheap_zone_init
 
-    ; mov ebx, PROTECTED_START_MSG
-    ; call print_vga_string
 
     ; to make VESA mode actually useful we need to load up
     ; a font
@@ -194,6 +196,7 @@ protected_start:
     call print_video_string
 
     ; set up interrupt table and enable interrupts again
+    mov eax, 0x4000 ; move the IDT to start of free memory
     call build_idt
     sti
 
@@ -213,30 +216,40 @@ protected_start:
     mov eax, TEST_3
     call print_video_string
 
+    mov edx, 6
+.outerlll:
     mov al, 40
-    mov ah, 0
+    mov ah, 12
+    sub ah, dl
     call set_video_cursor_position
-    mov eax, 'Q'
-    call bits_for_character
-    mov ebx, eax
-    mov ecx, 20
+
+
+    mov ebx, gdt
+    mov eax, edx
+    sub eax, 1
+    shl eax, 3
+    add ebx, eax
+    mov ecx, gdt_entry_t_size
 .lll:
-    mov ax, [ebx]
-    inc ebx
+
+    mov al, [ebx]
     inc ebx
     call print_video_hex_byte
-    shr eax, 8
-    call print_video_hex_byte
-    mov al, 40
-    mov ah, 21
-    sub ah, cl
-    call set_video_cursor_position
+
+
+    ; mov al, 48
+    ; sub al, cl
+    ; mov ah, 12
+    ; sub ah, dl
+    ; call set_video_cursor_position
+
     loop .lll
 
-    ; mov eax, ds
-    ; mov es, eax
-    ; mov edi, island_joy_16
-    ; call load_palette
+    dec dx
+    cmp dx, 0
+    jne .outerlll
+
+
     call paint_trim
     call scan_pci
     jmp .main
@@ -261,7 +274,9 @@ VESA_MODE_FIND_FAIL_MSG:
 VESA_MODE_SET_FAIL_MSG:
     db "Vi g", 0xF6, "r VESA mode inte", 0
 
+%include "src/kärna/idt.asm"
 %include "src/kärna/gdt.asm"
+%include "src/kärna/kmem.asm"
 %include "src/kärna/lib.asm"
 %include "src/kärna/vga_text.asm"
 %include "src/kärna/vga_video.asm"
@@ -273,4 +288,3 @@ VESA_MODE_SET_FAIL_MSG:
 %include "src/kärna/typsnitt.asm"
 %include "bin/strings.asm"
 %include "bin/färger.asm"
-%include "src/kärna/idt.asm" ; <--- currently must be last as we use mem at end of area
