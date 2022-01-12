@@ -1,6 +1,6 @@
 [bits 32]
 
-FONT_MEMORY_LOCATION equ 0x500
+FONT_MEMORY_LOCATION dd 0x500
 
 ; The typsnitt file format is just a slightly pre-processed PC Screen Font file to save
 ; writing more asm for now. The layout is:
@@ -50,7 +50,7 @@ load_video_font:
 
     mov edx, ds
     mov es, edx
-    mov edi, FONT_MEMORY_LOCATION
+    mov edi, [FONT_MEMORY_LOCATION]
 
     call ata_read_sectors
 
@@ -86,7 +86,7 @@ bits_for_character:
     push ecx
     push edx
 
-    mov ebx, FONT_MEMORY_LOCATION
+    mov ebx, [FONT_MEMORY_LOCATION]
 
     ; glyph map is an ordered list of (unicode glyph, index) pairs, both 32 bits long in size
     ; in an ideal world we'd do a better search alg, but just to get something working, let's brute force it
@@ -108,7 +108,7 @@ bits_for_character:
 
     mov eax, [ebx]
 
-    mov ebx, FONT_MEMORY_LOCATION
+    mov ebx, [FONT_MEMORY_LOCATION]
 
     mov edx, [ebx + typsnitt_header_t.BytesPerGlyph]
     mul edx  ; eax = index of glyth, edx = size of glyph - so now eax = byte offset into glyphs
