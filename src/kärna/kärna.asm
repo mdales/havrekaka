@@ -185,7 +185,6 @@ protected_start:
     mov eax, KERNEL_HEAP_SEG
     call kheap_zone_init
 
-
     ; to make VESA mode actually useful we need to load up
     ; a font
     call load_video_font
@@ -236,19 +235,30 @@ protected_start:
     inc ebx
     call print_video_hex_byte
 
-
-    ; mov al, 48
-    ; sub al, cl
-    ; mov ah, 12
-    ; sub ah, dl
-    ; call set_video_cursor_position
-
     loop .lll
 
     dec dx
     cmp dx, 0
     jne .outerlll
 
+    mov al, 0
+    mov ah, 15
+    call set_video_cursor_position
+    mov ax, [FONT_MEMORY_SEGMENT]
+    rol ax, 8
+    call print_video_hex_byte
+    rol ax, 8
+    call print_video_hex_byte
+
+    mov al, ':'
+    call print_video_character
+
+    mov eax, [FONT_MEMORY_LOCATION]
+    mov ecx, 4
+.fml:
+    rol eax, 8
+    call print_video_hex_byte
+    loop .fml
 
     call paint_trim
     call scan_pci

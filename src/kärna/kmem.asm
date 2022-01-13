@@ -78,7 +78,7 @@ kheap_zone_permanent_alloc:
     mov ecx, [fs:edi + kalloc_meta_t.length]
 
     cmp ebx, ecx
-    jlt .alloc
+    jl .alloc
 
 .fail:
     mov eax, 0x0
@@ -87,6 +87,7 @@ kheap_zone_permanent_alloc:
 .alloc:
     sub ecx, ebx
     mov eax, ecx
+    add eax, kalloc_meta_t_size
     mov [fs:edi + kalloc_meta_t.length], ecx
 
 .done:

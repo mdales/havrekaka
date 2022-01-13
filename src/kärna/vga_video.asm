@@ -75,6 +75,7 @@ clear_video_screen:
 ;     none
 print_video_character:
     push es
+    push fs
     push edx
     push edi
     push ecx
@@ -83,6 +84,7 @@ print_video_character:
 
     ; convert unicode character to a memory address of the glyph
     call bits_for_character
+    mov fs, bx
     mov ebx, eax
 
     mov edx, VESA_SEG
@@ -92,9 +94,9 @@ print_video_character:
     ; first pass, hardwire some vals here
     mov cl, 20
 .yloop:
-    mov ah, [ebx]
+    mov ah, [fs:ebx]
     inc ebx
-    mov al, [ebx]
+    mov al, [fs:ebx]
     inc ebx
 
     mov ch, 10
@@ -134,6 +136,7 @@ print_video_character:
     pop ecx
     pop edi
     pop edx
+    pop fs
     pop es
     ret
 
