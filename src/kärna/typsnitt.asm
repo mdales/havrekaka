@@ -42,7 +42,6 @@ load_video_font:
 
 .allocate_memory:
     mov edx, ebx
-    add ebx, 512
     mov ecx, eax
     mov ax, KERNEL_HEAP_SEG
     call kheap_zone_permanent_alloc
@@ -59,17 +58,11 @@ load_video_font:
     push es
     push edi
 
-    ; eax is now the offset (which is sector aligned), and ebx the length of the font file
-    ; so let's just push it to the start of memory for now
-    shr eax, 9
-    shr ebx, 9
-    add ebx, 1
-
     mov dx, [FONT_MEMORY_SEGMENT]
     mov es, dx
     mov edi, [FONT_MEMORY_LOCATION]
 
-    call ata_read_sectors
+    call load_file
 
     ; check for the magic number to verify we loaded stuff
     mov eax, [es:edi]
