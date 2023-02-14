@@ -113,6 +113,16 @@ gdt:
             at gdt_entry_t.base_24_31,       db 0x00
         iend
 
+    .sd_bootloader_tss:
+        istruc gdt_entry_t
+            at gdt_entry_t.limit_0_15,       dw 0x0000
+            at gdt_entry_t.base_0_15,        dw 0x0000
+            at gdt_entry_t.base_16_23,       db 0x00
+            at gdt_entry_t.access,           db 0b10001001
+            at gdt_entry_t.limit_and_flags,  db 0b01000000
+            at gdt_entry_t.base_24_31,       db 0x00
+        iend
+
 .gdt_end:
 
 
@@ -129,4 +139,5 @@ CODE_SEG equ gdt.sd_code - gdt
 DATA_SEG equ gdt.sd_data - gdt
 VGA_TEXT_SEG equ gdt.sd_vga - gdt
 VESA_SEG equ gdt.sd_vesa - gdt
+BOOTLOADER_TSS_SEG equ gdt.sd_bootloader_tss - gdt
 KERNEL_HEAP_SEG equ gdt.sd_kheap - gdt

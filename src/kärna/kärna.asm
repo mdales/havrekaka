@@ -175,6 +175,13 @@ protected_start:
     mov ebp, 0x7C00
     mov esp, ebp
 
+    ; before we get too carried away, let's switch to a task
+    mov eax, task_proteted_start
+    call fill_bootloader_tss
+
+    jmp $
+
+task_proteted_start:
     ; let the world know we made it this far again
     ; mov ebx, PROTECTED_START_MSG
     ; call clear_vga_screen
@@ -286,6 +293,7 @@ VESA_MODE_SET_FAIL_MSG:
 
 %include "src/kärna/idt.asm"
 %include "src/kärna/gdt.asm"
+%include "src/kärna/task.asm"
 %include "src/kärna/kmem.asm"
 %include "src/kärna/lib.asm"
 %include "src/kärna/vga_text.asm"
